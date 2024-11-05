@@ -22,7 +22,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://localhost:${PORT}`,
+                url: `https://clipper-2gxs.onrender.com`,
             },
         ],
     },
