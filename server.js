@@ -243,11 +243,11 @@ app.put('/api/clips/:id', async (req, res) => {
                 { returnDocument: 'after' }
             );
 
-        if (!result.value) {
+        if (!result) {
             return res.status(404).json({ error: 'Clip not found' });
         }
 
-        res.json(result.value);
+        res.json(result);
     } catch (error) {
         console.error('Error updating clip:', error);
         res.status(500).json({ error: 'Failed to update clip' });
