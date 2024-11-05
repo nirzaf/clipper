@@ -1,7 +1,7 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,39 +10,44 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI;
+// MongoDB Connection URI
+const uri = process.env.MONGODB_URI;
 
-mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
-
-// Clip Schema
-const clipSchema = new mongoose.Schema({
-    text: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+// Create MongoDB client
+const client = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
     }
 });
 
-const Clip = mongoose.model('Clip', clipSchema);
+// Database and Collection names
+const DB_NAME = 'clipper';
+const COLLECTION_NAME = 'clips';
+
+// Connect to MongoDB
+async function connectToMongo() {
+    try {
+        await client.connect();
+        await client.db("admin").command({ ping: 1 });
+        console.log("Successfully connected to MongoDB!");
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error);
+        process.exit(1);
+    }
+}
 
 // API Routes
 
 // GET - Retrieve all clips
 app.get('/api/clips', async (req, res) => {
     try {
-        const clips = await Clip.find({})
-            .select('-__v')
-            .sort({ createdAt: -1 });
+        const db = client.db(DB_NAME);
+        const clips = await db.collection(COLLECTION_NAME)
+            .find({})
+            .sort({ _id: -1 })
+            .toArray();
         res.json(clips);
     } catch (error) {
         console.error('Error fetching clips:', error);
@@ -53,7 +58,8 @@ app.get('/api/clips', async (req, res) => {
 // GET - Get clip count
 app.get('/api/clips/count', async (req, res) => {
     try {
-        const count = await Clip.countDocuments({});
+        const db = client.db(DB_NAME);
+        const count = await db.collection(COLLECTION_NAME).countDocuments({});
         res.json({ count });
     } catch (error) {
         console.error('Error counting clips:', error);
@@ -70,10 +76,13 @@ app.post('/api/clips', async (req, res) => {
             return res.status(400).json({ error: 'Text is required and must be a string' });
         }
 
-        const newClip = new Clip({ text });
-        const savedClip = await newClip.save();
+        const db = client.db(DB_NAME);
+        const result = await db.collection(COLLECTION_NAME).insertOne({ text });
         
-        res.status(201).json(savedClip);
+        const insertedClip = await db.collection(COLLECTION_NAME)
+            .findOne({ _id: result.insertedId });
+        
+        res.status(201).json(insertedClip);
     } catch (error) {
         console.error('Error creating clip:', error);
         res.status(500).json({ error: 'Failed to create clip' });
@@ -90,17 +99,19 @@ app.put('/api/clips/:id', async (req, res) => {
             return res.status(400).json({ error: 'Text is required and must be a string' });
         }
 
-        const updatedClip = await Clip.findByIdAndUpdate(
-            id,
-            { text },
-            { new: true, runValidators: true }
-        );
+        const db = client.db(DB_NAME);
+        const result = await db.collection(COLLECTION_NAME)
+            .findOneAndUpdate(
+                { _id: new ObjectId(id) },
+                { $set: { text } },
+                { returnDocument: 'after' }
+            );
 
-        if (!updatedClip) {
+        if (!result.value) {
             return res.status(404).json({ error: 'Clip not found' });
         }
 
-        res.json(updatedClip);
+        res.json(result.value);
     } catch (error) {
         console.error('Error updating clip:', error);
         res.status(500).json({ error: 'Failed to update clip' });
@@ -111,9 +122,11 @@ app.put('/api/clips/:id', async (req, res) => {
 app.delete('/api/clips/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedClip = await Clip.findByIdAndDelete(id);
+        const db = client.db(DB_NAME);
+        const result = await db.collection(COLLECTION_NAME)
+            .deleteOne({ _id: new ObjectId(id) });
 
-        if (!deletedClip) {
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Clip not found' });
         }
 
@@ -124,20 +137,14 @@ app.delete('/api/clips/:id', async (req, res) => {
     }
 });
 
-// DELETE - Delete all clips
-app.delete('/api/clips', async (req, res) => {
-    try {
-        await Clip.deleteMany({});
-        res.json({ message: 'All clips deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting all clips:', error);
-        res.status(500).json({ error: 'Failed to delete all clips' });
-    }
-});
-
 // Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ status: 'healthy' });
+app.get('/health', async (req, res) => {
+    try {
+        await client.db("admin").command({ ping: 1 });
+        res.json({ status: 'healthy', mongodb: 'connected' });
+    } catch (error) {
+        res.status(500).json({ status: 'unhealthy', mongodb: 'disconnected' });
+    }
 });
 
 // Error handling middleware
@@ -146,7 +153,25 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Initialize server
+async function startServer() {
+    await connectToMongo();
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+    try {
+        await client.close();
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+    }
 });
+
+// Start the server
+startServer().catch(console.dir);
