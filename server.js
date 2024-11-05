@@ -48,21 +48,41 @@ const client = new MongoClient(uri, {
 const DB_NAME = 'clipper';
 const COLLECTION_NAME = 'clips';
 
-// Connect to MongoDB
-async function connectToMongo() {
-    try {
-        await client.connect();
-        await client.db("admin").command({ ping: 1 });
-        console.log("Successfully connected to MongoDB!");
-    } catch (error) {
-        console.error("Error connecting to MongoDB:", error);
-        process.exit(1);
-    }
-}
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Clip:
+ *       type: object
+ *       required:
+ *         - text
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Auto-generated MongoDB ObjectId
+ *         text:
+ *           type: string
+ *           description: The content of the clip
+ */
 
-// API Routes
-
-// GET - Retrieve all clips
+/**
+ * @swagger
+ * /api/clips:
+ *   get:
+ *     summary: Retrieve all clips
+ *     description: Get all clips sorted by creation date in descending order
+ *     responses:
+ *       200:
+ *         description: A list of clips
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Clip'
+ *       500:
+ *         description: Server error
+ */
 app.get('/api/clips', async (req, res) => {
     try {
         const db = client.db(DB_NAME);
@@ -77,7 +97,26 @@ app.get('/api/clips', async (req, res) => {
     }
 });
 
-// GET - Get clip count
+/**
+ * @swagger
+ * /api/clips/count:
+ *   get:
+ *     summary: Get total number of clips
+ *     description: Returns the total count of clips in the database
+ *     responses:
+ *       200:
+ *         description: Total count of clips
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                   description: Total number of clips
+ *       500:
+ *         description: Server error
+ */
 app.get('/api/clips/count', async (req, res) => {
     try {
         const db = client.db(DB_NAME);
@@ -89,7 +128,35 @@ app.get('/api/clips/count', async (req, res) => {
     }
 });
 
-// POST - Create new clip
+/**
+ * @swagger
+ * /api/clips:
+ *   post:
+ *     summary: Create a new clip
+ *     description: Add a new clip to the database
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Clip created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Clip'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Server error
+ */
 app.post('/api/clips', async (req, res) => {
     try {
         const { text } = req.body;
@@ -111,7 +178,42 @@ app.post('/api/clips', async (req, res) => {
     }
 });
 
-// PUT - Update clip
+/**
+ * @swagger
+ * /api/clips/{id}:
+ *   put:
+ *     summary: Update a clip
+ *     description: Update an existing clip by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: MongoDB ID of the clip
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Clip updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Clip'
+ *       404:
+ *         description: Clip not found
+ *       500:
+ *         description: Server error
+ */
 app.put('/api/clips/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -140,7 +242,27 @@ app.put('/api/clips/:id', async (req, res) => {
     }
 });
 
-// DELETE - Delete single clip
+/**
+ * @swagger
+ * /api/clips/{id}:
+ *   delete:
+ *     summary: Delete a clip
+ *     description: Delete a clip by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: MongoDB ID of the clip
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Clip deleted successfully
+ *       404:
+ *         description: Clip not found
+ *       500:
+ *         description: Server error
+ */
 app.delete('/api/clips/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -159,7 +281,29 @@ app.delete('/api/clips/:id', async (req, res) => {
     }
 });
 
-// Health check endpoint
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Check if the server and MongoDB connection are healthy
+ *     responses:
+ *       200:
+ *         description: System is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: healthy
+ *                 mongodb:
+ *                   type: string
+ *                   example: connected
+ *       500:
+ *         description: System is unhealthy
+ */
 app.get('/health', async (req, res) => {
     try {
         await client.db("admin").command({ ping: 1 });
