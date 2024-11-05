@@ -2,6 +2,8 @@ const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config();
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,6 +11,26 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+const swaggerOptions = {
+    swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Clipper API',
+            version: '1.0.0',
+            description: 'API documentation for Clipper application',
+        },
+        servers: [
+            {
+                url: `http://localhost:${PORT}`,
+            },
+        ],
+    },
+    apis: ['./server.js'],
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // MongoDB Connection URI
 const uri = process.env.MONGODB_URI;
