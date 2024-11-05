@@ -12,6 +12,34 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// MongoDB Connection URI
+const uri = process.env.MONGODB_URI;
+
+// Create MongoDB client
+const client = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+});
+
+// Database and Collection names
+const DB_NAME = 'clipper';
+const COLLECTION_NAME = 'clips';
+
+// Connect to MongoDB
+async function connectToMongo() {
+    try {
+        await client.connect();
+        await client.db("admin").command({ ping: 1 });
+        console.log("Successfully connected to MongoDB!");
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error);
+        process.exit(1);
+    }
+}
+
 const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
@@ -31,22 +59,6 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-// MongoDB Connection URI
-const uri = process.env.MONGODB_URI;
-
-// Create MongoDB client
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-});
-
-// Database and Collection names
-const DB_NAME = 'clipper';
-const COLLECTION_NAME = 'clips';
 
 /**
  * @swagger
@@ -321,10 +333,15 @@ app.use((err, req, res, next) => {
 
 // Initialize server
 async function startServer() {
-    await connectToMongo();
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+    try {
+        await connectToMongo();
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
 }
 
 // Handle graceful shutdown
