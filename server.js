@@ -14,6 +14,7 @@ app.use(express.json());
 
 // MongoDB Connection URI
 const uri = process.env.MONGODB_URI;
+const swaggerUri = process.env.SWAGGER_URI;
 
 // Create MongoDB client
 const client = new MongoClient(uri, {
@@ -50,7 +51,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `https://clipper-2gxs.onrender.com`,
+                url: swaggerUri,
             },
         ],
     },
