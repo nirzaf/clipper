@@ -92,9 +92,26 @@ export const App: React.FC = () => {
 
           {/* Notes List */}
           <div className="space-y-1">
-            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              All notes
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                All notes
+              </h2>
+              <button
+                onClick={fetchNotes}
+                disabled={loading}
+                className={`p-1.5 rounded-md transition-all duration-200 text-base
+                  ${loading 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                  }
+                  text-gray-500 dark:text-gray-400
+                  focus:outline-none
+                `}
+                title="Refresh notes"
+              >
+                🔄
+              </button>
+            </div>
             <NotesTable
               notes={notes}
               onDelete={deleteNote}

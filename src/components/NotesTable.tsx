@@ -47,8 +47,6 @@ export const NotesTable: React.FC<NotesTableProps> = ({
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-[1fr,auto] gap-4 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-        <div>Content</div>
-        <div className="pr-20">Actions</div>
       </div>
       <div className="space-y-2">
         {notes.map((note) => (
