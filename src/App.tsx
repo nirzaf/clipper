@@ -63,12 +63,9 @@ export const App: React.FC = () => {
         <div className="space-y-8">
           {/* Header */}
           <div className="space-y-1">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            <h3 className="text-4xl font-bold text-gray-900 dark:text-white">
               Shared Clipboard
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              Share and manage your notes seamlessly across devices
-            </p>
+            </h3>
           </div>
 
           {/* Error Message */}
