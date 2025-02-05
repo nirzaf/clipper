@@ -1,22 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { ClipboardItem } from './types/clipboard';
+import { clipboardApi } from './services/api';
+import { NoteForm } from './components/NoteForm';
+import { NotesTable } from './components/NotesTable';
 import './App.css';
-
-interface ClipboardItem {
-  id: number;
-  field_3420227: number; // Id field
-  field_3420228: string; // Notes field
-}
-
-const baserowApi = axios.create({
-  baseURL: 'https://api.baserow.io/api/database/rows/table/',
-  headers: {
-    'Authorization': `Token ${import.meta.env.VITE_BASEROW_API_TOKEN}`,
-    'Content-Type': 'application/json',
-  },
-});
-
-const TABLE_ID = import.meta.env.VITE_BASEROW_TABLE_ID;
 
 const App: React.FC = () => {
   const [notes, setNotes] = useState<ClipboardItem[]>([]);
@@ -28,8 +15,8 @@ const App: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await baserowApi.get(`${TABLE_ID}/`);
-      setNotes(response.data.results);
+      const results = await clipboardApi.getNotes();
+      setNotes(results);
     } catch (err) {
       setError('Failed to fetch notes. Please try again.');
       console.error('Error fetching notes:', err);
@@ -38,16 +25,13 @@ const App: React.FC = () => {
     }
   };
 
-  const createNote = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const createNote = async () => {
     if (!newNote.trim()) return;
 
     try {
       setLoading(true);
       setError(null);
-      await baserowApi.post(`${TABLE_ID}/`, {
-        field_3420228: newNote.trim() // Notes field
-      });
+      await clipboardApi.createNote(newNote);
       setNewNote('');
       await fetchNotes();
     } catch (err) {
@@ -62,7 +46,7 @@ const App: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      await baserowApi.delete(`${TABLE_ID}/${id}/`);
+      await clipboardApi.deleteNote(id);
       await fetchNotes();
     } catch (err) {
       setError('Failed to delete note. Please try again.');
@@ -77,60 +61,57 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="container">
-      <header className="header">
-        <h1>📋 Shared Clipboard</h1>
-        <p>Share your notes across devices</p>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section with Title */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 py-6 mb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">
+              📋 Shared Clipboard
+            </h1>
+            <p className="mt-2 text-sm text-indigo-100 sm:text-base">
+              Share and manage your clipboard content across devices
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <form onSubmit={createNote} className="input-form">
-        <textarea
-          value={newNote}
-          onChange={(e) => setNewNote(e.target.value)}
-          placeholder="Type your note here..."
-          rows={3}
-          disabled={loading}
-        />
-        <button type="submit" disabled={loading || !newNote.trim()}>
-          {loading ? 'Adding...' : 'Add Note'}
-        </button>
-      </form>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Input Form */}
+        <div className="bg-white rounded shadow-sm p-4 mb-4">
+          <NoteForm
+            value={newNote}
+            onChange={setNewNote}
+            onSubmit={createNote}
+            loading={loading}
+          />
+        </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="notes-container">
-        {loading && notes.length === 0 ? (
-          <div className="loading">Loading notes...</div>
-        ) : notes.length === 0 ? (
-          <div className="empty-state">No notes yet. Add your first note!</div>
-        ) : (
-          <div className="notes-grid">
-            {notes.map((note) => (
-              <div key={note.field_3420227} className="note-card">
-                <p>{note.field_3420228}</p>
-                <div className="note-actions">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(note.field_3420228);
-                    }}
-                    className="copy-button"
-                    title="Copy to clipboard"
-                  >
-                    📋 Copy
-                  </button>
-                  <button
-                    onClick={() => deleteNote(note.field_3420227)}
-                    className="delete-button"
-                    disabled={loading}
-                    title="Delete note"
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
+        {error && (
+          <div className="rounded bg-red-50 p-3 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-4 w-4 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
               </div>
-            ))}
+              <div className="ml-2">
+                <p className="text-sm font-medium text-red-800">{error}</p>
+              </div>
+            </div>
           </div>
         )}
+
+        {/* Table */}
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="min-w-full divide-y divide-gray-200">
+            <NotesTable
+              notes={notes}
+              onDelete={deleteNote}
+              loading={loading}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
