@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface NoteFormProps {
   value: string;
@@ -13,6 +13,8 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   onSubmit,
   disabled = false,
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit();
@@ -29,42 +31,49 @@ export const NoteForm: React.FC<NoteFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="space-y-4">
-        <div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="note" className="block text-sm font-medium text-gray-900 dark:text-gray-100">
-              New Note
-            </label>
-            <button
-              type="button"
-              onClick={handlePaste}
-              disabled={disabled}
-              className="text-sm font-medium rounded-md text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              Paste from Clipboard
-            </button>
-          </div>
-          <div className="mt-2">
+      <div className="rounded-md border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700">
+        <div 
+          className={`
+            relative transition-all duration-200
+            ${isFocused ? 'bg-gray-50/80 dark:bg-gray-800/30' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/20'}
+          `}
+        >
+          <div className="px-4 py-3">
             <textarea
-              rows={4}
+              rows={1}
               name="note"
               id="note"
               value={value}
               onChange={(e) => onChange(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               disabled={disabled}
-              className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800/50 sm:text-sm sm:leading-6"
-              placeholder="Type or paste your note here..."
+              className="block w-full resize-none bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-0 border-0 p-0 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="Type your note here..."
+              style={{ minHeight: '2.5rem' }}
             />
+            <div className="mt-2 flex items-center justify-end space-x-1">
+              <button
+                type="button"
+                onClick={handlePaste}
+                disabled={disabled}
+                className="p-1.5 text-base rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                title="Paste from clipboard"
+              >
+                📋
+              </button>
+              {value.trim() && (
+                <button
+                  type="submit"
+                  disabled={disabled}
+                  className="p-1.5 text-base rounded-md bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  title="Save note"
+                >
+                  💾
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={disabled || !value.trim()}
-            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-indigo-500 dark:hover:bg-indigo-600"
-          >
-            Add Note
-          </button>
         </div>
       </div>
     </form>

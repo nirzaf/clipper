@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ClipboardItem } from '../types/clipboard';
 
 interface NotesTableProps {
@@ -12,15 +12,23 @@ export const NotesTable: React.FC<NotesTableProps> = ({
   onDelete,
   loading = false
 }) => {
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const handleCopy = async (content: string, id: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            <div className="w-12 h-12 border-4 border-indigo-200 dark:border-indigo-900 rounded-full animate-spin"></div>
-            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-indigo-600 dark:border-indigo-400 rounded-full animate-spin border-t-transparent"></div>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading your notes...</p>
+        <div className="animate-pulse text-gray-500 dark:text-gray-400">
+          Loading...
         </div>
       </div>
     );
@@ -28,52 +36,57 @@ export const NotesTable: React.FC<NotesTableProps> = ({
 
   if (notes.length === 0) {
     return (
-      <div className="text-center py-12">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">No notes yet</h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first note!</p>
+      <div className="py-12 text-center">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          No notes yet. Start typing to create one.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-800">
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Note ID
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Content
-            </th>
-            <th scope="col" className="relative px-6 py-3">
-              <span className="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-          {notes.map((note) => (
-            <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                #{note.id}
-              </td>
-              <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                <div className="whitespace-pre-wrap break-words">
-                  {note.content}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+    <div className="space-y-2">
+      <div className="grid grid-cols-[1fr,auto] gap-4 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div>Content</div>
+        <div className="pr-20">Actions</div>
+      </div>
+      <div className="space-y-2">
+        {notes.map((note) => (
+          <div
+            key={note.id}
+            className="group relative rounded-md border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-all duration-200"
+          >
+            <div className="px-4 py-3 grid grid-cols-[1fr,auto] gap-4 items-start">
+              <div className="text-base text-gray-900 dark:text-white whitespace-pre-wrap break-words min-h-[2rem]">
+                {note.content}
+              </div>
+              <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button
+                  onClick={() => handleCopy(note.content, note.id)}
+                  className={`
+                    p-1.5 rounded-md transition-all duration-200 text-base
+                    ${copiedId === note.id
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                    }
+                    focus:opacity-100 focus:outline-none
+                  `}
+                  title={copiedId === note.id ? 'Copied!' : 'Copy to clipboard'}
+                >
+                  {copiedId === note.id ? '✅' : '📋'}
+                </button>
                 <button
                   onClick={() => onDelete(note.id)}
-                  className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+                  className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 focus:opacity-100 focus:outline-none transition-all duration-200 text-base"
+                  title="Delete note"
                 >
-                  Delete
+                  🗑️
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
