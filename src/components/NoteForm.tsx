@@ -7,9 +7,6 @@ interface NoteFormProps {
   disabled?: boolean;
 }
 
-/**
- * Form component for adding new notes with paste functionality
- */
 export const NoteForm: React.FC<NoteFormProps> = ({
   value,
   onChange,
@@ -21,31 +18,54 @@ export const NoteForm: React.FC<NoteFormProps> = ({
     onSubmit();
   };
 
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      onChange(text);
+    } catch (err) {
+      console.error('Failed to read clipboard:', err);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="note" className="sr-only">
-          Enter your note
-        </label>
-        <textarea
-          id="note"
-          name="note"
-          rows={3}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-          placeholder="Type your note here..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-        />
-      </div>
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={disabled || !value.trim()}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Add Note
-        </button>
+    <form onSubmit={handleSubmit}>
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center justify-between">
+            <label htmlFor="note" className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+              New Note
+            </label>
+            <button
+              type="button"
+              onClick={handlePaste}
+              disabled={disabled}
+              className="text-sm font-medium rounded-md text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+              Paste from Clipboard
+            </button>
+          </div>
+          <div className="mt-2">
+            <textarea
+              rows={4}
+              name="note"
+              id="note"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+              className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800/50 sm:text-sm sm:leading-6"
+              placeholder="Type or paste your note here..."
+            />
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={disabled || !value.trim()}
+            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          >
+            Add Note
+          </button>
+        </div>
       </div>
     </form>
   );

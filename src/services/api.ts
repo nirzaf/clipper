@@ -13,7 +13,10 @@ const TABLE_ID = import.meta.env.VITE_BASEROW_TABLE_ID;
 export const clipboardApi = {
   getNotes: async () => {
     const response = await baserowApi.get(`${TABLE_ID}/`);
-    return response.data.results;
+    return response.data.results.map((item: any) => ({
+      id: item.id,
+      content: item.field_3420228
+    }));
   },
 
   createNote: async (content: string) => {
