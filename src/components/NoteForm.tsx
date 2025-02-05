@@ -1,11 +1,10 @@
-import React, { useRef } from 'react';
-import { Button } from './ui/Button';
+import React from 'react';
 
 interface NoteFormProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
-  loading?: boolean;
+  disabled?: boolean;
 }
 
 /**
@@ -15,63 +14,38 @@ export const NoteForm: React.FC<NoteFormProps> = ({
   value,
   onChange,
   onSubmit,
-  loading
+  disabled = false,
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit();
   };
 
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      onChange(text);
-      textareaRef.current?.focus();
-    } catch (err) {
-      console.error('Failed to read clipboard:', err);
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="relative">
+      <div>
+        <label htmlFor="note" className="sr-only">
+          Enter your note
+        </label>
         <textarea
-          ref={textareaRef}
+          id="note"
+          name="note"
+          rows={3}
+          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+          placeholder="Type your note here..."
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Type your note here..."
-          className="w-full min-h-[100px] p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-white"
+          disabled={disabled}
         />
       </div>
-      <div className="flex items-center space-x-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handlePaste}
-          icon={
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          }
-        >
-          Paste
-        </Button>
-        <Button
+      <div className="flex justify-end">
+        <button
           type="submit"
-          variant="default"
-          size="sm"
-          loading={loading}
-          icon={
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-          }
+          disabled={disabled || !value.trim()}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Add Note
-        </Button>
+        </button>
       </div>
     </form>
   );
