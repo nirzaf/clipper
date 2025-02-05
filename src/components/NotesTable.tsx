@@ -36,37 +36,44 @@ export const NotesTable: React.FC<NotesTableProps> = ({
   }
 
   return (
-    <div className="p-4">
-      <div className="grid gap-4 grid-cols-1">
-        {notes.map((note) => (
-          <div
-            key={note.id}
-            className="group relative bg-white dark:bg-gray-800/50 rounded-lg shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 hover:shadow-md transition-shadow duration-200"
-          >
-            <div className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0 pr-4">
-                  <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
-                    {note.content}
-                  </div>
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Note ID
+            </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Content
+            </th>
+            <th scope="col" className="relative px-6 py-3">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+          {notes.map((note) => (
+            <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                #{note.id}
+              </td>
+              <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                <div className="whitespace-pre-wrap break-words">
+                  {note.content}
                 </div>
-                <div className="flex-shrink-0">
-                  <button
-                    onClick={() => onDelete(note.id)}
-                    className="px-2 py-1 text-sm rounded-md text-red-600 dark:text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-opacity duration-200"
-                    title="Delete note"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Note #{note.id}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                <button
+                  onClick={() => onDelete(note.id)}
+                  className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
