@@ -4,7 +4,14 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import CodeBlock from '@tiptap/extension-code-block';
 import Placeholder from '@tiptap/extension-placeholder';
-import { FiBold } from 'react-icons/fi';
+import { 
+  FiBold, 
+  FiItalic, 
+  FiList, 
+  FiCode,
+  FiLink,
+  FiCheckSquare
+} from 'react-icons/fi';
 
 interface RichTextEditorProps {
   content: string;
@@ -12,21 +19,71 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
+const MenuBar = ({ editor }) => {
   if (!editor) {
     return null;
   }
-  
+
   return (
-    <div className="flex flex-wrap gap-2 p-2 border-b border-gray-200 dark:border-gray-700">
+    <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-white rounded-t-lg">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ${
-          editor.isActive('bold') ? 'bg-gray-100 dark:bg-gray-800' : ''
+        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          editor.isActive('bold') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
         }`}
         title="Bold"
       >
-        <FiBold />
+        <FiBold className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          editor.isActive('italic') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
+        }`}
+        title="Italic"
+      >
+        <FiItalic className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          editor.isActive('bulletList') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
+        }`}
+        title="Bullet List"
+      >
+        <FiList className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          editor.isActive('codeBlock') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
+        }`}
+        title="Code Block"
+      >
+        <FiCode className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => {
+          const url = window.prompt('Enter URL');
+          if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+          }
+        }}
+        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          editor.isActive('link') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
+        }`}
+        title="Add Link"
+      >
+        <FiLink className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleTaskList().run()}
+        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+          editor.isActive('taskList') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
+        }`}
+        title="Task List"
+      >
+        <FiCheckSquare className="w-4 h-4" />
       </button>
     </div>
   );
@@ -43,27 +100,33 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-primary-500 hover:underline',
+          class: 'text-blue-600 hover:underline',
         },
       }),
       CodeBlock,
       Placeholder.configure({
         placeholder,
+        showOnlyWhenEditable: true,
       }),
     ],
     content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[500px] px-4 py-3',
+      },
+    },
   });
 
   return (
-    <div className="border-2 border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm hover:border-primary-500 dark:hover:border-primary-500 focus-within:border-primary-500 dark:focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-500/20 transition-all">
+    <div className="border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
       <MenuBar editor={editor} />
-      <div className="border-t border-gray-200 dark:border-gray-700">
-        <EditorContent
-          editor={editor}
-          className="prose dark:prose-invert max-w-none p-4 min-h-[300px] focus:outline-none"
+      <div className="editor-wrapper">
+        <EditorContent 
+          editor={editor} 
+          className="editor-content min-h-[500px] overflow-y-auto"
         />
       </div>
     </div>
