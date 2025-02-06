@@ -1,15 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { NoteForm } from './components/NoteForm';
-import { NotesTable } from './components/NotesTable';
-import { clipboardApi } from './services/api';
-import { ClipboardItem } from './types/clipboard';
+import React, { useEffect, useState } from "react";
+import { NoteForm } from "./components/NoteForm";
+import { clipboardApi } from "./services/api";
+import { ClipboardItem } from "./types/clipboard";
+import {
+  FiClipboard,
+  FiRefreshCw,
+  FiCopy,
+  FiTrash2,
+  FiCheck,
+} from "react-icons/fi";
 
 export const App: React.FC = () => {
   const [notes, setNotes] = useState<ClipboardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newNote, setNewNote] = useState('');
+  const [newNote, setNewNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const fetchNotes = async () => {
     try {
@@ -18,8 +25,8 @@ export const App: React.FC = () => {
       const fetchedNotes = await clipboardApi.getNotes();
       setNotes(fetchedNotes);
     } catch (err) {
-      setError('Failed to load notes. Please try again later.');
-      console.error('Error fetching notes:', err);
+      setError("Failed to load notes. Please try again later.");
+      console.error("Error fetching notes:", err);
     } finally {
       setLoading(false);
     }
@@ -36,11 +43,11 @@ export const App: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       await clipboardApi.createNote(newNote);
-      setNewNote('');
+      setNewNote("");
       await fetchNotes();
     } catch (err) {
-      setError('Failed to create note. Please try again.');
-      console.error('Error creating note:', err);
+      setError("Failed to create note. Please try again.");
+      console.error("Error creating note:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -52,70 +59,105 @@ export const App: React.FC = () => {
       await clipboardApi.deleteNote(id);
       await fetchNotes();
     } catch (err) {
-      setError('Failed to delete note. Please try again.');
-      console.error('Error deleting note:', err);
+      setError("Failed to delete note. Please try again.");
+      console.error("Error deleting note:", err);
+    }
+  };
+
+  const copyToClipboard = async (content: string, id: number) => {
+    try {
+      // Create a temporary element to handle HTML content
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = content;
+      const textContent = tempDiv.textContent || tempDiv.innerText || "";
+
+      await navigator.clipboard.writeText(textContent);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#191919]">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="space-y-1">
-            <h3 className="text-4xl font-bold text-gray-900 dark:text-white">
+    <div className="min-h-screen">
+      <div className="clipboard-container">
+        {/* Header */}
+        <header className="header flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-700">
               Shared Clipboard
-            </h3>
+            </h1>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="px-4 py-3 rounded-md bg-red-50 dark:bg-red-900/30">
-              <p className="text-sm text-red-800 dark:text-red-200">
-                {error}
-              </p>
-            </div>
-          )}
-
-          {/* New Note Form */}
-          <div className="space-y-4">
-            <NoteForm
-              value={newNote}
-              onChange={setNewNote}
-              onSubmit={createNote}
-              disabled={isSubmitting}
-            />
+          <div className="flex items-center gap-4">
+            <button
+              onClick={fetchNotes}
+              disabled={loading}
+              className="button button-primary"
+              aria-label="Refresh notes"
+            >
+              <FiRefreshCw className={`${loading ? "animate-spin" : ""}`} />
+            </button>
           </div>
+        </header>
 
-          {/* Notes List */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                All notes
-              </h2>
-              <button
-                onClick={fetchNotes}
-                disabled={loading}
-                className={`p-1.5 rounded-md transition-all duration-200 text-base
-                  ${loading 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'
-                  }
-                  text-gray-500 dark:text-gray-400
-                  focus:outline-none
-                `}
-                title="Refresh notes"
-              >
-                🔄
-              </button>
-            </div>
-            <NotesTable
-              notes={notes}
-              onDelete={deleteNote}
-              loading={loading}
-            />
+        {/* Error Message */}
+        {error && (
+          <div className="fade-in bg-red-50 dark:bg-red-900/30 px-4 py-3 rounded-md mb-6">
+            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
           </div>
+        )}
+
+        {/* New Note Form */}
+        <div className="note-form">
+          <NoteForm
+            value={newNote}
+            onChange={setNewNote}
+            onSubmit={createNote}
+            disabled={isSubmitting}
+          />
         </div>
+
+        {/* Notes Grid */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="loading-spinner" />
+          </div>
+        ) : (
+          <div className="notes-grid">
+            {notes.map((note) => (
+              <div key={note.id} className="note-card fade-in">
+                <div
+                  className="mb-4 rich-text-content"
+                  dangerouslySetInnerHTML={{ __html: note.content }}
+                />
+                <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => copyToClipboard(note.content, note.id)}
+                      className="button button-secondary p-2"
+                      aria-label="Copy note"
+                    >
+                      {copiedId === note.id ? (
+                        <FiCheck className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <FiCopy className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="button button-danger p-2"
+                      aria-label="Delete note"
+                    >
+                      <FiTrash2 />
+                      <span className="sr-only"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
