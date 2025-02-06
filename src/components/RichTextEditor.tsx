@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -7,10 +7,9 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { 
   FiBold, 
   FiItalic, 
-  FiList, 
-  FiCode,
+  FiCode, 
   FiLink,
-  FiCheckSquare
+  FiList,
 } from 'react-icons/fi';
 
 interface RichTextEditorProps {
@@ -19,7 +18,7 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-const MenuBar = ({ editor }) => {
+const MenuBar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
     return null;
   }
@@ -76,15 +75,6 @@ const MenuBar = ({ editor }) => {
       >
         <FiLink className="w-4 h-4" />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleTaskList().run()}
-        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
-          editor.isActive('taskList') ? 'bg-gray-100 text-blue-600' : 'text-gray-600'
-        }`}
-        title="Task List"
-      >
-        <FiCheckSquare className="w-4 h-4" />
-      </button>
     </div>
   );
 };
@@ -119,6 +109,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       },
     },
   });
+
+  useEffect(() => {
+    if (editor && editor.getHTML() !== content) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
 
   return (
     <div className="border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">

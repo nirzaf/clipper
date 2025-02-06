@@ -1,8 +1,7 @@
-import { ClipboardItem } from '../types/clipboard';
-
-interface ApiResponse<T> {
-  data: T;
-  error: string | null;
+interface ClipboardItem {
+  id: number;
+  content: string;
+  created_at: string; // Add created_at if it's part of the data you want to preserve during the refactor. It wasn't in the provided axios example, so I'm including it here for completeness.
 }
 
 class ClipboardService {
@@ -19,14 +18,16 @@ class ClipboardService {
     };
   }
 
-  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || 'An error occurred while processing your request');
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText || 'An error occurred'}`);
     }
-
-    const data = await response.json();
-    return { data, error: null };
+    try {
+      return await response.json() as T;
+    } catch (e) {
+      throw new Error(`Failed to parse JSON: ${e}`);
+    }
   }
 
   async getNotes(): Promise<ClipboardItem[]> {
@@ -34,50 +35,56 @@ class ClipboardService {
       const response = await fetch(`${this.baseUrl}/${this.tableId}/`, {
         headers: this.headers
       });
-      const { data } = await this.handleResponse<any>(response);
-      console.log('API Response:', data);
-      return data.results.map((item: any) => {
-        console.log('Item:', item);
-        return {
-          id: item.id,
-          content: item.field_3420228,
-          created_at: item.created_on || new Date().toISOString()
-        };
-      });
+
+      const data = await this.handleResponse<{ results: any[] }>(response);
+
+      if (!data || !data.results) {
+        console.warn("No data or results found in API response.");
+        return [];
+      }
+
+      return data.results.map((item: any) => ({
+        id: item.id,
+        content: item.field_3420228,
+        created_at: item.created_on || new Date().toISOString() //Include created_at, but provide default
+      }));
     } catch (error) {
       console.error('Error fetching notes:', error);
       throw error;
     }
   }
 
-  async createNote(content: string): Promise<ClipboardItem> {
+  async createNote(content: string): Promise<void> { //Return type void to match original behavior
     try {
-      const response = await fetch(`${this.baseUrl}/${this.tableId}/`, {
+      await fetch(`${this.baseUrl}/${this.tableId}/`, {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify({
           field_3420228: content.trim()
         }),
       });
-      const { data } = await this.handleResponse<any>(response);
-      return {
-        id: data.id,
-        content: data.field_3420228,
-        created_at: new Date(data.created_on).toLocaleString()
-      };
+      // original axios implementation returned nothing on create.  No need to handle response.
     } catch (error) {
       console.error('Error creating note:', error);
       throw error;
     }
   }
 
-  async deleteNote(id: number): Promise<void> {
+  async deleteNote(id: number): Promise<void> { //Return type void to match original behavior
     try {
       const response = await fetch(`${this.baseUrl}/${this.tableId}/${id}/`, {
         method: 'DELETE',
         headers: this.headers
       });
-      await this.handleResponse<void>(response);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete note: ${response.status} - ${errorText}`);
+      }
+      if (response.status !== 204) { // Check for 204 No Content. Baserow API should return this.
+        console.warn(`Delete response status was not 204: ${response.status}.  Checking if deletion was successful.`);
+      }
+
     } catch (error) {
       console.error('Error deleting note:', error);
       throw error;

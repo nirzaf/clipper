@@ -86,6 +86,27 @@
   margin: 1.5em 0 0.5em;
 }
 
+/* Task List Styles */
+ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5em;
+}
+
+ul[data-type="taskList"] input[type="checkbox"] {
+  margin-right: 0.5em;
+  cursor: pointer;
+}
+
+.task-list-item {
+  padding-left: 1.5em;
+}
+
 /* Custom scrollbar styles */
 .custom-scrollbar {
   scrollbar-width: thin;

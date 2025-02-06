@@ -1,8 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { ClipboardItem as ClipboardItemType } from '../types/clipboard';
 import { useClipboard } from '../hooks/useClipboard';
-import { formatDistanceToNow, parseISO } from 'date-fns';
-import { FiCopy, FiTrash2, FiClock } from 'react-icons/fi';
 
 // Array of Tailwind gradient classes
 const borderGradients = [
@@ -43,76 +41,52 @@ const ClipboardItemBase: React.FC<ClipboardItemProps> = ({
     return borderGradients[index];
   }, [item.id]);
 
-  const timeAgo = React.useMemo(() => {
-    try {
-      if (!item.created_at) return 'Just now';
-      
-      let date;
-      try {
-        date = parseISO(item.created_at);
-      } catch (err) {
-        date = new Date(item.created_at);
-      }
-
-      if (isNaN(date.getTime())) return 'Just now';
-
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch (err) {
-      console.error('Error formatting date:', err);
-      return 'Just now';
-    }
-  }, [item.created_at]);
-
   return (
-    <div className="group relative">
-      {/* Gradient border container */}
-      <div className={`absolute -inset-[0.5px] rounded-xl bg-gradient-to-r ${borderGradient} opacity-75 blur-[1px] transition duration-300 group-hover:opacity-100 group-hover:blur-0`} />
+    <div className={`relative group animate-fade-in`}>
+      {/* Gradient border */}
+      <div
+        className={`absolute inset-0 rounded-xl bg-gradient-to-r ${borderGradient} opacity-50 blur-sm group-hover:opacity-100 transition-opacity`}
+      />
       
-      {/* Content container */}
-      <div className="relative bg-white rounded-xl overflow-hidden">
-        {/* Time badge */}
-        <div className="flex items-center text-sm text-gray-500 px-5 pt-4">
-          <FiClock className="w-4 h-4 mr-1.5 flex-shrink-0" />
-          <span>{timeAgo}</span>
-        </div>
-
-        {/* Main content */}
-        <div className="p-5">
-          <div
-            className="prose prose-sm max-w-none text-gray-700 min-h-[50px] max-h-[300px] overflow-y-auto custom-scrollbar"
-            dangerouslySetInnerHTML={{ __html: item.content }}
-          />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex justify-end items-center p-4 bg-gray-50/80 backdrop-blur-sm border-t border-gray-100">
-          <button
-            onClick={handleCopy}
-            title="Copy to clipboard"
-            className={`inline-flex items-center justify-center w-14 h-14 rounded-lg text-sm font-medium transition-all duration-200 ${
-              isCopied 
-                ? 'bg-green-50 text-green-600 hover:bg-green-100' 
-                : 'text-blue-600 hover:bg-blue-50'
-            }`}
-          >
-            {isCopied ? (
-              <svg className="w-8 h-8 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <FiCopy className="w-8 h-8" />
-            )}
-          </button>
-
-          <div className="w-8" /> {/* Reduced spacer for larger buttons */}
-
-          <button
-            onClick={() => onDelete(item.id)}
-            title="Delete item"
-            className="inline-flex items-center justify-center w-14 h-14 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
-          >
-            <FiTrash2 className="w-8 h-8" />
-          </button>
+      {/* Main card with embossed effect */}
+      <div className="relative p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        {/* Inner embossed effect */}
+        <div className="relative bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-inner">
+          <div className="prose dark:prose-invert max-w-none mb-4" dangerouslySetInnerHTML={{ __html: item.content }} />
+          
+          <div className="flex justify-end space-x-4 mt-2">
+            <button
+              onClick={handleCopy}
+              disabled={loading}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 relative group"
+              title={isCopied ? 'Copied!' : 'Copy to clipboard'}
+            >
+              <img 
+                src="/copy.png" 
+                alt="Copy" 
+                className={`w-5 h-5 transition-transform group-hover:scale-110 ${
+                  isCopied ? 'opacity-75' : ''
+                }`}
+              />
+              {isCopied && (
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                  Copied!
+                </div>
+              )}
+            </button>
+            <button
+              onClick={() => onDelete(item.id)}
+              disabled={loading}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 group"
+              title="Delete"
+            >
+              <img 
+                src="/delete.png" 
+                alt="Delete" 
+                className="w-5 h-5 transition-transform group-hover:scale-110"
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
