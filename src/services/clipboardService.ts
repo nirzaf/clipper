@@ -11,7 +11,7 @@ class ClipboardService {
   private headers: HeadersInit;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_BASEROW_API_URL;
+    this.baseUrl = 'https://api.baserow.io/api/database/rows/table';
     this.tableId = import.meta.env.VITE_BASEROW_TABLE_ID;
     this.headers = {
       'Authorization': `Token ${import.meta.env.VITE_BASEROW_API_TOKEN}`,
