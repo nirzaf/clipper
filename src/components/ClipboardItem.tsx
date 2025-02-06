@@ -18,7 +18,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({
 }) => {
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(item.field_3420228);
+      await navigator.clipboard.writeText(item.content);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -27,10 +27,10 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({
   return (
     <tr className="group hover:bg-gray-50">
       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
-        {item.field_3420227}
+        {item.created_at}
       </td>
       <td className="px-3 py-2 text-sm text-gray-900">
-        <div className="whitespace-pre-wrap text-sm">{item.field_3420228}</div>
+        <div className="whitespace-pre-wrap text-sm">{item.content}</div>
       </td>
       <td className="px-3 py-2 whitespace-nowrap text-right text-sm">
         <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -46,7 +46,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({
             title="Copy to clipboard"
           />
           <Button
-            onClick={() => onDelete(item.field_3420227)}
+            onClick={() => onDelete(item.id)}
             variant="ghost"
             size="sm"
             icon={

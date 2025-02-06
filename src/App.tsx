@@ -3,7 +3,6 @@ import { NoteForm } from "./components/NoteForm";
 import { clipboardApi } from "./services/api";
 import { ClipboardItem } from "./types/clipboard";
 import {
-  FiClipboard,
   FiRefreshCw,
   FiCopy,
   FiTrash2,
