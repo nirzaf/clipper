@@ -27,6 +27,23 @@
   --hover-bg: #1e293b;
 }
 
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: rgb(17, 24, 39);
+  color: rgb(255, 255, 255);
+}
+
+.dark .prose {
+  color: rgb(255, 255, 255);
+}
+
+.dark .prose p {
+  color: rgb(255, 255, 255);
+}
+
 body {
   background-color: var(--clickup-secondary);
   color: var(--clickup-text);
@@ -343,6 +360,7 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .container {
@@ -415,6 +433,12 @@ body {
   margin-bottom: 1rem;
 }
 
+.dark .error-message {
+  background-color: rgb(127, 29, 29);
+  border-color: rgb(185, 28, 28);
+  color: rgb(252, 165, 165);
+}
+
 .notes-container {
   margin-top: 2rem;
 }
@@ -485,7 +509,7 @@ body {
 .card-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 2rem;
   margin-top: 2rem;
   padding-bottom: 2rem;
 }
@@ -602,6 +626,11 @@ body {
   margin-bottom: 2rem;
 }
 
+.dark .form-container {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
 /* Rich text editor container */
 .editor-container {
   background: white;
@@ -687,12 +716,12 @@ body {
 
 /* Error message */
 .error-message {
-  background: #FEE2E2;
-  border: 1px solid #FECACA;
-  border-radius: 0.5rem;
+  background-color: rgb(254, 242, 242);
+  border: 1px solid rgb(252, 165, 165);
+  color: rgb(185, 28, 28);
   padding: 1rem;
-  margin-bottom: 1rem;
-  color: #991B1B;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
 }
 
 /* Fade in animation */
@@ -832,4 +861,101 @@ button:active img {
 
 .group-hover\:scale-110:hover {
   transform: scale(1.1);
+}
+
+/* Glass morphism effect */
+.glass-morphism {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(209, 213, 219, 0.3);
+}
+
+.dark .glass-morphism {
+  background-color: rgba(17, 25, 40, 0.75);
+  border-color: rgba(255, 255, 255, 0.125);
+}
+
+/* Improved transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Smooth hover animations */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.2);
+}
+
+.dark .hover-lift:hover {
+  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced card styles */
+.card {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dark .card {
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+              0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover effects */
+.button-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.button-hover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s;
+  pointer-events: none;
+}
+
+.button-hover:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.dark .button-hover::after {
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+}
+
+/* Theme transition */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Dark mode background */
+.dark body {
+  background-color: rgb(17, 24, 39);
+  color: rgb(229, 231, 235);
+}
+
+/* Theme toggle transition */
+.theme-toggle-icon {
+  transition: transform 0.2s ease;
+}
+
+.theme-toggle-icon:hover {
+  transform: rotate(12deg) scale(1.1);
 }

@@ -3,6 +3,7 @@ import { NoteForm } from "./components/NoteForm";
 import { clipboardService } from "./services/clipboardService";
 import { ClipboardItem as ClipboardItemType } from "./types/clipboard";
 import { ClipboardItem } from "./components/ClipboardItem";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { FiRefreshCw } from "react-icons/fi";
 import "./styles/richText.css";
 import "./App.css";
@@ -13,6 +14,21 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [newNote, setNewNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  useEffect(() => {
+    // Update the document class when theme changes
+    document.documentElement.classList.toggle('dark', isDark);
+    // Save theme preference
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   const fetchNotes = async () => {
     try {
@@ -27,10 +43,6 @@ export const App: React.FC = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchNotes();
-  }, []);
 
   const createNote = async () => {
     if (!newNote.trim() || isSubmitting) return;
@@ -60,23 +72,27 @@ export const App: React.FC = () => {
     }
   };
 
+  const toggleTheme = () => {
+    setIsDark(prev => !prev);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
         <header className="app-header">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-              Shared Clipboard
-            </h1>
-            <button
-              onClick={fetchNotes}
-              disabled={loading}
-              className="p-2 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50"
-              aria-label="Refresh notes"
-            >
-              <FiRefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
-            </button>
+            <div className="flex items-center space-x-6">
+              <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+              <button
+                onClick={fetchNotes}
+                disabled={loading}
+                className="p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                aria-label="Refresh notes"
+              >
+                <FiRefreshCw className={`w-8 h-8 ${loading ? "animate-spin" : ""}`} />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -100,13 +116,13 @@ export const App: React.FC = () => {
 
           {/* Notes Grid */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8">
               {[1, 2, 3].map((n) => (
-                <div key={n} className="h-48 bg-gray-100 rounded-xl animate-pulse" />
+                <div key={n} className="h-48 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8">
               {notes.map((note) => (
                 <div key={note.id}>
                   <ClipboardItem
@@ -117,8 +133,8 @@ export const App: React.FC = () => {
                 </div>
               ))}
               {notes.length === 0 && !loading && (
-                <div className="col-span-full p-8 text-center bg-white rounded-xl border-2 border-dashed border-gray-200">
-                  <p className="text-gray-500">No clipboard items yet. Create one above!</p>
+                <div className="col-span-full p-8 text-center bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <p className="text-gray-500 dark:text-gray-400">No clipboard items yet. Create one above!</p>
                 </div>
               )}
             </div>

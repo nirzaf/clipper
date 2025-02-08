@@ -43,22 +43,28 @@ const ClipboardItemBase: React.FC<ClipboardItemProps> = ({
 
   return (
     <div className={`relative group animate-fade-in`}>
-      {/* Gradient border */}
+      {/* Subtle gradient border */}
       <div
-        className={`absolute inset-0 rounded-xl bg-gradient-to-r ${borderGradient} opacity-50 blur-sm group-hover:opacity-100 transition-opacity`}
+        className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${borderGradient} opacity-20 group-hover:opacity-30 transition-all duration-300 blur-[2px]`}
       />
       
-      {/* Main card with embossed effect */}
-      <div className="relative p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-        {/* Inner embossed effect */}
-        <div className="relative bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-inner">
-          <div className="prose dark:prose-invert max-w-none mb-4" dangerouslySetInnerHTML={{ __html: item.content }} />
+      {/* Main card */}
+      <div className="relative backdrop-blur-sm bg-white dark:bg-gray-800 rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 border border-gray-200 dark:border-gray-700">
+        {/* Content container */}
+        <div className="p-6">
+          {/* Content area with subtle background */}
+          <div className="relative rounded-xl overflow-hidden">
+            <div className="prose max-w-none mb-4 text-gray-800 dark:text-white" 
+                 dangerouslySetInnerHTML={{ __html: item.content }} 
+            />
+          </div>
           
+          {/* Action buttons */}
           <div className="flex justify-end space-x-4 mt-2">
             <button
               onClick={handleCopy}
               disabled={loading}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 relative group"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 relative group"
               title={isCopied ? 'Copied!' : 'Copy to clipboard'}
             >
               <img 
