@@ -88,9 +88,9 @@ export const App: React.FC = () => {
               <button
                 onClick={fetchNotes}
                 disabled={loading}
-                className="p-8 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 min-w-[120px] min-h-[120px] flex items-center justify-center"
+                className="p-4 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 min-w-[60px] min-h-[60px] flex items-center justify-center"
                 aria-label="Refresh notes"
-                style={{ width: '120px', height: '120px', marginLeft: '20px' }}
+                style={{ width: '60px', height: '60px', marginLeft: '20px' }}
               >
                 <FontAwesomeIcon 
                   icon={faRotate}
