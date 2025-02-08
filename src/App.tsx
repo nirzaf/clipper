@@ -4,7 +4,8 @@ import { clipboardService } from "./services/clipboardService";
 import { ClipboardItem as ClipboardItemType } from "./types/clipboard";
 import { ClipboardItem } from "./components/ClipboardItem";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { FiRefreshCw } from "react-icons/fi";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import "./styles/richText.css";
 import "./App.css";
 
@@ -82,15 +83,20 @@ export const App: React.FC = () => {
         {/* Header */}
         <header className="app-header">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center" style={{ gap: '20px' }}>
               <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
               <button
                 onClick={fetchNotes}
                 disabled={loading}
-                className="p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="p-8 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 min-w-[120px] min-h-[120px] flex items-center justify-center"
                 aria-label="Refresh notes"
+                style={{ width: '120px', height: '120px', marginLeft: '20px' }}
               >
-                <FiRefreshCw className={`w-8 h-8 ${loading ? "animate-spin" : ""}`} />
+                <FontAwesomeIcon 
+                  icon={faRotate}
+                  className="text-gray-600 dark:text-gray-300 transition-transform hover:scale-110"
+                  style={{ width: '40px', height: '40px' }}
+                />
               </button>
             </div>
           </div>
